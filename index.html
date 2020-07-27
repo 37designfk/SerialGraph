@@ -1,0 +1,77 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Serial Monitor</title>
+    <script type="text/javascript" src="./js/moment.js"></script>
+    <script type="text/javascript" src="./js/Chart.js"></script>
+    <script type="text/javascript" src="./js/chartjs-plugin-streaming.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+
+</head>
+
+<body>
+    <canvas id="myChart"></canvas>
+    
+
+    <script>
+
+    var socket = io.connect();
+    socket.on('raw', function (data) {
+    data = data.replace(' ', '&nbsp;');
+    console.log(data)
+    });
+    
+    var ctx = document.getElementById('myChart').getContext('2d');
+    
+    var chart = new Chart(ctx, {
+        type: 'line',               
+        data: {
+            datasets: [{
+                label: '筋電センサー',
+                backgroundColor: 'rgba(0,0,0,0.0)',
+                borderColor: '#cccccc',
+                //lineTension: 1,
+                data: []            
+            }]
+        },
+        options: {
+            scales: {
+                xAxes: [{
+                    type: 'realtime',    
+                    ticks: {
+                        maxTicksLimit:10
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        stepSize: 1,
+                        min: 0,
+                        max: 5
+                    }
+                }]
+            },
+            plugins: {
+                streaming: {            
+                    duration: 4000,    
+                    refresh: 5,      
+                    //delay: 1000,        
+                    //frameRate: 60,      
+                    pause: false,       
+    
+    
+                    onRefresh: function(chart) {
+                        chart.data.datasets[0].data.push({
+                            x: Date.now(),
+                            y: data
+                        });
+                    }
+                }
+            }
+        }
+    });
+
+
+
+    </script>
+</body>
+</html>
